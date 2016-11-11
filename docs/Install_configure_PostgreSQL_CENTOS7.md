@@ -15,15 +15,15 @@ Initialize the system. Configure PostgreSQL to allow password authentication.
 
 **1. Install the requisite packages on your server.**
 
-```
-sudo yum install postgresql-server postgresql-contrib -y
-```
+
+`$ sudo yum install postgresql-server postgresql-contrib -y`
+
 
 **2. Initialize postgresql:**
 
-```
-sudo postgresql-setup initdb
-```
+
+`$ sudo postgresql-setup initdb`
+
 
 **3. Replace the term `ident` from following lines**
 in file `/var/lib/pgsql/data/pg_hba.conf` with `md5`
@@ -72,9 +72,9 @@ you will need to create a system user to manage `HaaS` database as follows.
 
 In this case both system username and home directory will be named `haas`
 
-```
-useradd haas --system -d /var/lib/haas -m -r
-```
+
+`$ useradd haas --system -d /var/lib/haas -m -r`
+
 
 **6. Create a database role named `haas` with priviledges to:**
  `-r` create roles
@@ -84,8 +84,8 @@ This is necessary since we have configured PostgreSQL to use password authentica
 
 ```
 $ sudo -u postgres createuser -r -d -P haas
-Enter password for new role:  <Input password for database role haas>
-Enter it again: <Retype password for role haas>
+$ Enter password for new role:  <Input password for database role haas>
+$ Enter it again: <Retype password for role haas>
 ```
 
 Confirm that the role with requisite privileges is created **as postgres user**:
@@ -101,10 +101,10 @@ $ psql -c '\dg'
 
 If you wish to delete the user, do the following:
 
-```
-$ sudo -u postgres dropuser haas
-```
-**Note**: Make sure that the database role you create corresponds to an existing system user. 
+
+`$ sudo -u postgres dropuser haas`
+
+**Note**: Make sure that the database role you create corresponds to an existing system user.
 eg. There has to be a system user `haas` to access database named `haas` as database role named `haas`.
 
 
@@ -134,9 +134,9 @@ $ psql -c '\l'
 If you have followed all steps so far. 
 Put following string in `haas.cfg` under section `[database]`
 
-```
-uri = postgresql://haas:<clear text password >@localhost:5432/haas
-```
+
+`uri = postgresql://haas:<clear text password >@localhost:5432/haas`
+
 
 It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
 where ``<user>`` is the name of the postgres user you created, ``<password>`` is
