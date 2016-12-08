@@ -1,4 +1,4 @@
-
+JUSt TESTING IGNORE
 The following steps will let you install, configure PostgreSQL server and
 create a `haas` database for development or production version of HaaS on a
 Centos - 7 server.
