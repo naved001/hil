@@ -25,7 +25,7 @@ from haas.model import *
 from haas import config
 
 from haas.test_common import fresh_database, config_testsuite, ModelTest, \
-    fail_on_log_warnings
+    fail_on_log_warnings, with_request_context
 import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
@@ -38,9 +38,12 @@ def configure():
 
 
 fresh_database = pytest.fixture(fresh_database)
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
-pytestmark = pytest.mark.usefixtures('configure', 'fresh_database')
+pytestmark = pytest.mark.usefixtures('configure',
+                                     'with_request_context',
+                                     'fresh_database')
 
 
 class TestNic(ModelTest):

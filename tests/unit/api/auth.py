@@ -83,10 +83,10 @@ with_request_context = pytest.yield_fixture(with_request_context)
 
 
 pytestmark = pytest.mark.usefixtures('configure',
+                                     'with_request_context',
                                      'fresh_database',
                                      'additional_db',
-                                     'server_init',
-                                     'with_request_context')
+                                     'server_init')
 
 
 # We have a *lot* of different parameters with which we're going to invoke

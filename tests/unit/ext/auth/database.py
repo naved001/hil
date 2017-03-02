@@ -1,6 +1,6 @@
 from haas import api, model, config, server
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
-    ModelTest, fail_on_log_warnings
+    ModelTest, fail_on_log_warnings, with_request_context
 from haas.flaskapp import app
 from haas.model import db
 from haas.errors import AuthorizationError
@@ -123,11 +123,18 @@ def no_auth():
     flask.request = FakeNoAuthRequest()
 
 
+# def use_fixtures(auth_fixture):
+#     return pytest.mark.usefixtures('configure',
+#                                    'initial_db',
+#                                    'server_init',
+#                                    auth_fixture,
+#                                    'auth_context')
+
+
 def use_fixtures(auth_fixture):
-    return pytest.mark.usefixtures('configure',
+    return pytest.mark.usefixtures('configure', auth_fixture,
                                    'initial_db',
                                    'server_init',
-                                   auth_fixture,
                                    'auth_context')
 
 
@@ -229,7 +236,7 @@ class TestUserAddRemoveProject(DBAuthTestCase):
             self.dbauth.user_remove_project('charlie', 'acme-corp')
 
 
-@pytest.mark.usefixtures('configure', 'initial_db')
+@pytest.mark.usefixtures('configure', 'auth_context', 'initial_db')
 class TestUserModel(ModelTest):
     """Basic sanity check for the User model.
 
