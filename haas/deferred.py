@@ -29,8 +29,8 @@ class DaemonSession(object):
     def handle_action(self, action):
         if action.type not in model.NetworkingAction.legal_types:
             logger.warn('Illegal action type %r from server; ignoring.')
-        elif not action.nic.port:
-            logger.warn('Not modifying NIC %s; NIC is not on a port.',
+        elif not action.port and not action.nic.port:
+            logger.warn('Not modifying NIC %s; NIC is not on a port. no port',
                         action.nic.label)
         else:
             getattr(self, action.type)(action)
@@ -57,8 +57,8 @@ class DaemonSession(object):
                 channel=action.channel))
 
     def revert_port(self, action):
-        session = self.get_session(action.nic.port.owner)
-        session.revert_port(action.nic.port.label)
+        session = self.get_session(action.port.owner)
+        session.revert_port(action.port.label)
         model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
 
     def get_session(self, switch):

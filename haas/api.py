@@ -1066,16 +1066,15 @@ def port_revert(switch, port):
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)
-
-    if port.nic is None:
-        raise NotFoundError(port.label + " not attached")
-    if port.nic.current_action:
+    
+    if port.nic and port.nic.current_action:
         raise BlockedError("Port already has a pending action.")
 
     db.session.add(model.NetworkingAction(type='revert_port',
-                                          nic=port.nic,
+                                          nic=None,
                                           channel='',
-                                          new_network=None))
+                                          new_network=None,
+                                          port=port))
     db.session.commit()
 
 
