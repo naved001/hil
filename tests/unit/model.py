@@ -111,9 +111,9 @@ class TestNetworkingAction(ModelTest):
     def sample_obj(self):
         from haas.ext.switches.mock import MockSwitch
         port = Port('eth0', Switch(label='mock-switch',
-                                    type=MockSwitch(hostname="host",
-                                                    username="user",
-                                                    password="pass")))
+                                   type=MockSwitch(hostname="host",
+                                                   username="user",
+                                                   password="pass")))
         project = Project('anvil-nextgen')
         network = Network(project, [project], True, '102', 'hammernet')
         return NetworkingAction(port=port,
