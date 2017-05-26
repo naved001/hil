@@ -535,7 +535,7 @@ class NetworkingAction(db.Model):
 
     # The port affected by the action. for 'revert_port'
 
-    port_id = db.Column(db.ForeignKey('port.id'))
+    port_id = db.Column(db.ForeignKey('port.id'), nullable=False)
     port = db.relationship("Port",
                            backref=db.backref('current_action', uselist=False))
     # If `type` is 'modify_port', this denotes the channel that should be
