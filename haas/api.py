@@ -434,9 +434,12 @@ def node_detach_network(node, nic, network):
         raise ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
+    if port is None:
+        raise BadArgumentError("Nic is not connected to any port")
+
     if port.current_action:
         raise BlockedError(
-            "A networking operation is already active on the nic.")
+            "A networking operation is already active.")
     attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).first()
     if attachment is None:
