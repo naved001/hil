@@ -214,7 +214,7 @@ class TestBrocade(object):
 
         # Test action to set a network as native
         action_native = model.NetworkingAction(type='modify_port',
-                                               nic=nic,
+                                               port=port,
                                                new_network=network,
                                                channel='vlan/native')
 
@@ -229,7 +229,7 @@ class TestBrocade(object):
             url_trunk = switch._construct_url(INTERFACE1, suffix='trunk')
             mock.put(url_trunk)
 
-            switch.modify_port(action_native.nic.port.label,
+            switch.modify_port(action_native.port.label,
                                action_native.channel,
                                action_native.new_network.network_id)
 
@@ -241,7 +241,7 @@ class TestBrocade(object):
 
         # Test action to remove a native network
         action_rm_native = model.NetworkingAction(type='modify_port',
-                                                  nic=nic,
+                                                  port=port,
                                                   new_network=None,
                                                   channel='vlan/native')
 
@@ -250,7 +250,7 @@ class TestBrocade(object):
                                                suffix='trunk/native-vlan')
             mock.delete(url_native)
 
-            switch.modify_port(action_rm_native.nic.port.label,
+            switch.modify_port(action_rm_native.port.label,
                                action_rm_native.channel,
                                None)
 
@@ -259,7 +259,7 @@ class TestBrocade(object):
 
         # Test action to add a vlan
         action_vlan = model.NetworkingAction(type='modify_port',
-                                             nic=nic,
+                                             port=port,
                                              new_network=network,
                                              channel='vlan/102')
         with requests_mock.mock() as mock:
@@ -272,7 +272,7 @@ class TestBrocade(object):
                                               suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
-            switch.modify_port(action_vlan.nic.port.label,
+            switch.modify_port(action_vlan.port.label,
                                action_vlan.channel,
                                action_vlan.new_network.network_id)
 
@@ -284,7 +284,7 @@ class TestBrocade(object):
 
         # Test action to remove a vlan
         action_rm_vlan = model.NetworkingAction(type='modify_port',
-                                                nic=nic,
+                                                port=port,
                                                 new_network=None,
                                                 channel='vlan/102')
         with requests_mock.mock() as mock:
@@ -292,7 +292,7 @@ class TestBrocade(object):
                                               suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
-            switch.modify_port(action_rm_vlan.nic.port.label,
+            switch.modify_port(action_rm_vlan.port.label,
                                action_rm_vlan.channel,
                                None)
 
