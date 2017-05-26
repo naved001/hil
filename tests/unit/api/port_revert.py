@@ -43,13 +43,6 @@ class Test_port_revert(unittest.TestCase):
         self.request_context.pop()
         releaseDB()
 
-    def test_no_nic(self):
-        with pytest.raises(api.NotFoundError):
-            # free_port_0 is not attached to a nic.
-            api.port_revert('stock_switch_0', 'free_port_0')
-        deferred.apply_networking()
-        assert self.LOCAL_STATE['stock_switch_0']['free_port_0'] == {}
-
     def test_one_network(self):
         api.node_connect_network('runway_node_0',
                                  'nic-with-port',
