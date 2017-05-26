@@ -129,7 +129,7 @@ def project_detach_node(project, node):
     if num_attachments != 0:
         raise BlockedError("Node attached to a network")
     for nic in node.nics:
-        if nic.current_action is not None:
+        if nic.port and nic.port.current_action is not None:
             raise BlockedError("Node has pending network actions")
     node.obm.stop_console()
     node.obm.delete_console()
@@ -380,7 +380,9 @@ def node_connect_network(node, nic, network, channel=None):
     if nic.port is None:
         raise NotFoundError("No port is connected to given nic.")
 
-    if nic.current_action:
+    port = nic.port
+
+    if port.current_action:
         raise BlockedError(
             "A networking operation is already active on the nic.")
 
@@ -402,7 +404,7 @@ def node_connect_network(node, nic, network, channel=None):
                                channel)
 
     db.session.add(model.NetworkingAction(type='modify_port',
-                                          nic=nic,
+                                          port=nic.port,
                                           new_network=network,
                                           channel=channel))
     db.session.commit()
@@ -426,12 +428,13 @@ def node_detach_network(node, nic, network):
     node = _must_find(model.Node, node)
     network = _must_find(model.Network, network)
     nic = _must_find_n(node, model.Nic, nic)
+    port = nic.port
 
     if not node.project:
         raise ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
-    if nic.current_action:
+    if port.current_action:
         raise BlockedError(
             "A networking operation is already active on the nic.")
     attachment = model.NetworkAttachment.query \
@@ -439,7 +442,7 @@ def node_detach_network(node, nic, network):
     if attachment is None:
         raise BadArgumentError("The network is not attached to the nic.")
     db.session.add(model.NetworkingAction(type='modify_port',
-                                          nic=nic,
+                                          port=nic.port,
                                           channel=attachment.channel,
                                           new_network=None))
     db.session.commit()
@@ -1067,13 +1070,11 @@ def port_revert(switch, port):
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)
 
-    if port.nic is None:
-        raise NotFoundError(port.label + " not attached")
-    if port.nic.current_action:
+    if port.current_action:
         raise BlockedError("Port already has a pending action.")
 
     db.session.add(model.NetworkingAction(type='revert_port',
-                                          nic=port.nic,
+                                          port=port,
                                           channel='',
                                           new_network=None))
     db.session.commit()

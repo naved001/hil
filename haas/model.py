@@ -531,18 +531,17 @@ class NetworkingAction(db.Model):
     # * 'revert_port' detaches the port from all networks.
     type = db.Column(db.String, nullable=False)
 
-    nic_id = db.Column(db.ForeignKey('nic.id'), nullable=False)
     new_network_id = db.Column(db.ForeignKey('network.id'), nullable=True)
 
+    # The port affected by the action. for 'revert_port'
+
+    port_id = db.Column(db.ForeignKey('port.id'))
+    port = db.relationship("Port",
+                           backref=db.backref('current_action', uselist=False))
     # If `type` is 'modify_port', this denotes the channel that should be
     # affected on the given port. If `type` is 'revert_port', this field
     # is ignored.
     channel = db.Column(db.String, nullable=False)
-
-    # The nic affected by the action. for 'revert_port', this is the nic
-    # attached to the specified port.
-    nic = db.relationship("Nic",
-                          backref=db.backref('current_action', uselist=False))
 
     # For 'modify_port', this is the new network that the (nic, channel) pair
     # should be moved to, or None if the (nic, channel) should just be detached
