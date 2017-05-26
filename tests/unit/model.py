@@ -109,15 +109,13 @@ class TestMetadata(ModelTest):
 class TestNetworkingAction(ModelTest):
 
     def sample_obj(self):
-        from haas.ext.obm.ipmi import Ipmi
-        nic = Nic(Node(label='node-99',
-                       obm=Ipmi(type=Ipmi.api_name,
-                                host="ipmihost",
-                                user="root",
-                                password="tapeworm")),
-                  'ipmi', '00:11:22:33:44:55')
+        from haas.ext.switches.mock import MockSwitch
+        port = Port('eth0', Switch(label='mock-switch',
+                                    type=MockSwitch(hostname="host",
+                                                    username="user",
+                                                    password="pass")))
         project = Project('anvil-nextgen')
         network = Network(project, [project], True, '102', 'hammernet')
-        return NetworkingAction(nic=nic,
+        return NetworkingAction(port=port,
                                 new_network=network,
                                 channel='null')
