@@ -1,12 +1,14 @@
 """Manage server-side startup"""
 import sys
-# api must be loaded to register the api callbacks, even though we don't
-# call it directly from this module:
+
 from haas import model, api, auth
-from haas.model import db
 from haas.class_resolver import build_class_map_for
 from haas.network_allocator import get_network_allocator
-from os import path
+
+# api must be loaded to register the api callbacks, even though we don't
+# use it directly from this module. We put it in a noop statement by itself
+# to silence warnings about the unused import:
+api
 
 
 def register_drivers():
