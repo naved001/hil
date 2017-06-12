@@ -26,6 +26,7 @@ from haas.model import db, Switch
 from haas.migrations import paths
 from haas.ext.switches import _console
 from os.path import dirname, join
+from lxml import etree
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 
