@@ -30,6 +30,7 @@ from haas.network_allocator import get_network_allocator
 from haas.errors import *
 import abc
 
+
 # Project Code #
 ################
 @rest_call('GET', '/projects', Schema({}))
