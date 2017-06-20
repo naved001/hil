@@ -1,6 +1,6 @@
 """Rename mockswitch table for Flask-SQLAlchemy
 
-See the docstring in 'hil/migrations/versions/6a8c19565060_move_to_flask.py'
+See the docstring in 'haas/migrations/versions/6a8c19565060_move_to_flask.py'
 
 Revision ID: b5b31d19257d
 Revises:
@@ -15,7 +15,7 @@ from hil.flaskapp import app
 # revision identifiers, used by Alembic.
 revision = 'b5b31d19257d'
 down_revision = None
-branch_labels = ('hil.ext.switches.mock',)
+branch_labels = ('haas.ext.switches.mock',)
 
 
 def upgrade():
