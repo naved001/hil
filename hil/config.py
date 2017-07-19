@@ -34,6 +34,8 @@ def load(filename='hil.cfg'):
 
     This must be called once at program startup; no configuration options will
     be available until then.
+
+    If the config file is not found, it will simply exit.
     """
     opened_file = cfg.read(filename)
     if filename not in opened_file:
