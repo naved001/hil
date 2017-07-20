@@ -5,8 +5,6 @@ export HIL_PASSWORD=12345
 
 # Initial Setup
 cd /etc
-# copy hil.cfg otherwise hil would complain and exit
-cp $TRAVIS_BUILD_DIR/examples/hil.cfg.dev-no-hardware hil.cfg
 hil-admin db create
 hil create_admin_user $HIL_USERNAME $HIL_PASSWORD
 cd $TRAVIS_BUILD_DIR
