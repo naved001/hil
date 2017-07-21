@@ -808,6 +808,10 @@ def list_active_extensions():
         for ext in all_extensions:
             print ext
 
+@cmd
+def is_authorized(node):
+    """Checks if user is authorized to access node <node>"""
+    print C.user.is_authorized(node)
 
 @cmd
 def help(*commands):

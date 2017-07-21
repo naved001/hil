@@ -1274,6 +1274,14 @@ def stop_console(nodename):
     node.obm.delete_console()
 
 
+@rest_call('GET', '/node/<nodename>/is_authorized', Schema({
+    'nodename': basestring,}))
+def is_authorized(nodename):
+    node = _must_find(model.Node, nodename)
+    if node.project is None:
+        return json.dumps(False)
+    return json.dumps(get_auth_backend().have_project_access(node.project))
+
 # Helper functions #
 ####################
 def _assert_absent(cls, name):

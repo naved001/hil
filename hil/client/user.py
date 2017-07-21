@@ -64,3 +64,8 @@ class User(ClientBase):
         return self.check_response(
                 self.httpClient.request("PATCH", url, data=payload)
                 )
+
+    def is_authorized(self, node):
+        """Check if user can access node <node>"""
+        url = self.object_url('node', node, 'is_authorized')
+        return self.check_response(self.httpClient.request("GET", url))
