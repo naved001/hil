@@ -1278,9 +1278,12 @@ def stop_console(nodename):
     'nodename': basestring,}))
 def is_authorized(nodename):
     node = _must_find(model.Node, nodename)
-    if node.project is None:
-        return json.dumps(False)
-    return json.dumps(get_auth_backend().have_project_access(node.project))
+    if get_auth_backend().have_admin():
+        return json.dumps({'authorized': True})
+    elif node.project is None:
+        return json.dumps({'authorized': False})
+    return json.dumps({
+        'authorized': get_auth_backend().have_project_access(node.project)})
 
 # Helper functions #
 ####################
