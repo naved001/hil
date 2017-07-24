@@ -5,7 +5,6 @@ from hil.flaskapp import app
 from hil.model import db
 from hil.errors import AuthorizationError, IllegalStateError
 from hil.rest import init_auth, local
-from hil.ext.auth.database import user_add_project
 import flask
 import pytest
 import unittest
@@ -349,6 +348,7 @@ def test_admin_noauth_fail(fn, args):
     with pytest.raises(AuthorizationError):
         fn(*args)
 
+
 @use_fixtures('admin_auth')
 class TestExplicitAuthCalls(DBAuthTestCase):
     """Tests for is_authorized"""
@@ -366,20 +366,18 @@ class TestExplicitAuthCalls(DBAuthTestCase):
         # switch to a non admin user
         local.auth = self.dbauth.User.query.filter_by(label='bob').one()
         assert json.loads(api.is_authorized('node-99')) == {
-            'authorized': False }
+            'authorized': False}
         # switch to an admin user. admins always have access to a node.
         local.auth = self.dbauth.User.query.filter_by(label='alice').one()
         assert json.loads(api.is_authorized('node-99')) == {
-            'authorized': True }
-        
+            'authorized': True}
+
         # create a project for our non admin user, and add the node to it and
         # check if they can access that node now.
         api.project_create('bob-project')
         api.project_connect_node('bob-project', 'node-99')
-        user_add_project('bob', 'bob-project')
-        
+        self.dbauth.user_add_project('bob', 'bob-project')
+
         local.auth = self.dbauth.User.query.filter_by(label='bob').one()
         assert json.loads(api.is_authorized('node-99')) == {
-            'authorized': True }
-        
-
+            'authorized': True}
