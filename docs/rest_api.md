@@ -1269,3 +1269,19 @@ List all active extensions.
 Authorization requirements:
 
 * Administrative access.
+
+#### is_authorized
+
+`GET /node/<nodename>/is_authorized`
+
+Response Body:
+
+{
+    "authorized": <boolean>
+}
+
+Returns whether or not a user is authorized to access <node>
+
+Authorization requirements:
+
+* No special access.
