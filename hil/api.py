@@ -1275,7 +1275,7 @@ def stop_console(nodename):
 
 
 @rest_call('GET', '/node/<nodename>/is_authorized', Schema({
-    'nodename': basestring,}))
+    'nodename': basestring, }))
 def is_authorized(nodename):
     node = _must_find(model.Node, nodename)
     if get_auth_backend().have_admin():
@@ -1284,6 +1284,7 @@ def is_authorized(nodename):
         return json.dumps({'authorized': False})
     return json.dumps({
         'authorized': get_auth_backend().have_project_access(node.project)})
+
 
 # Helper functions #
 ####################
