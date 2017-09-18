@@ -29,6 +29,7 @@ from subprocess import call, check_call, Popen, PIPE
 from hil.flaskapp import app
 from hil.config import cfg
 from hil.dev_support import no_dry_run
+from hil.network_allocator import get_network_allocator
 import uuid
 import xml.etree.ElementTree
 from sqlalchemy import BigInteger
@@ -265,7 +266,22 @@ class SwitchSession(object):
         If `new_network` is `None`, The (port, channel) pair should be
         removed from it's existing network (if any).
         """
-        assert False, "Subclasses MUST override modify_port"
+        if channel == 'vlan/native':
+            if new_network is None:
+                self._remove_native_vlan(port)
+            else:
+                self._set_native_vlan(port, new_network)
+        else:
+            vlan_id = channel.replace('vlan/', '')
+            legal = get_network_allocator(). \
+                is_legal_channel_for(channel, vlan_id)
+            assert legal, "HIL passed an invalid channel to the switch!"
+
+            if new_network is None:
+                self._remove_vlan_from_trunk(port, vlan_id)
+            else:
+                assert new_network == vlan_id
+                self._add_vlan_to_trunk(port, vlan_id)
 
     def revert_port(self, port):
         """Detach the port from all networks.

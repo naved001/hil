@@ -132,7 +132,8 @@ class _DellN3000Session(_BaseSession):
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
         self._sendline('sw trunk allowed vlan remove 1-4093')
 
-    def disable_native(self, vlan_id):
+    def disable_native(self, interface):
+        vlan_id = self._get_old_native(interface)
         self.disable_vlan(vlan_id)
         # first set the dummy vlan as trunking vlan, then set that as it's
         # native, then remove that vlan from trunking vlans. otherwise the

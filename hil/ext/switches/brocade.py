@@ -75,32 +75,6 @@ class Brocade(Switch, SwitchSession):
     def disconnect(self):
         pass
 
-    def modify_port(self, port, channel, new_network):
-        # XXX: We ought to be able to do a Port.query ... one() here, but
-        # there's somthing I(zenhack)  don't understand going on with when
-        # things are committed in the tests for this driver, and we don't
-        # get any results that way. We should figure out what's going on with
-        # that test and change this.
-        (port,) = filter(lambda p: p.label == port, self.ports)
-        interface = port.label
-
-        if channel == 'vlan/native':
-            if new_network is None:
-                self._remove_native_vlan(interface)
-            else:
-                self._set_native_vlan(interface, new_network)
-        else:
-            match = re.match(re.compile(r'vlan/(\d+)'), channel)
-            assert match is not None, "HIL passed an invalid channel to the" \
-                " switch!"
-            vlan_id = match.groups()[0]
-
-            if new_network is None:
-                self._remove_vlan_from_trunk(interface, vlan_id)
-            else:
-                assert new_network == vlan_id
-                self._add_vlan_to_trunk(interface, vlan_id)
-
     def revert_port(self, port):
         self._remove_all_vlans_from_trunk(port)
         if self._get_native_vlan(port) is not None:
@@ -312,5 +286,6 @@ class Brocade(Switch, SwitchSession):
         r = requests.request(method, url, data=data, auth=self._auth)
         if r.status_code >= 400 and \
            r.status_code not in acceptable_error_codes:
+            import pdb; pdb.set_trace()
             logger.error('Bad Request to switch. Response: %s', r.text)
         return r

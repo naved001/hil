@@ -39,13 +39,15 @@ class _BaseSession(_console.Session):
     def disable_vlan(self, vlan_id):
         self._sendline('sw trunk allowed vlan remove ' + vlan_id)
 
-    def set_native(self, old, new):
+    def set_native(self, interface, vlan):
+        old = self._get_old_native(interface)
         if old is not None:
             self.disable_vlan(old)
-        self.enable_vlan(new)
-        self._sendline('sw trunk native vlan ' + new)
+        self.enable_vlan(vlan)
+        self._sendline('sw trunk native vlan ' + vlan)
 
-    def disable_native(self, vlan_id):
+    def disable_native(self, interface):
+        vlan_id = self._get_old_native(interface)
         self.disable_vlan(vlan_id)
         self._sendline('sw trunk native vlan none')
 

@@ -75,24 +75,15 @@ class Session(SwitchSession):
         """End the session. Must be at the main prompt."""
 
     def modify_port(self, port, channel, new_network):
-        interface = port
-        port = Port.query.filter_by(label=port,
-                                    owner_id=self.switch.id).one()
 
-        self.enter_if_prompt(interface)
+        self.enter_if_prompt(port)
         self.console.expect(self.if_prompt)
 
         if channel == 'vlan/native':
-            old_native = NetworkAttachment.query.filter_by(
-                channel='vlan/native',
-                nic_id=port.nic.id).one_or_none()
-            if old_native is not None:
-                old_native = old_native.network.network_id
-
-            if new_network is not None:
-                self.set_native(old_native, new_network)
-            elif old_native is not None:
-                self.disable_native(old_native)
+            if new_network is None:
+                self.disable_native(port)
+            else:
+                self.set_native(port, new_network)
         else:
             match = re.match(_CHANNEL_RE, channel)
             # TODO: I'd be more okay with this assertion if it weren't possible
@@ -136,6 +127,16 @@ class Session(SwitchSession):
             self.console.sendline('terminal length 0')
         elif lines == 'default':
             self.console.sendline('terminal length 40')
+
+    def _get_old_native(self, port):
+        port = Port.query.filter_by(label=port,
+                                    owner_id=self.switch.id).one()
+        old_native = NetworkAttachment.query.filter_by(
+                channel='vlan/native',
+                nic_id=port.nic.id).one_or_none()
+        if old_native is not None:
+                old_native = old_native.network.network_id
+        return old_native
 
 
 def get_prompts(console):
