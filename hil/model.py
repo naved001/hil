@@ -246,6 +246,14 @@ class Switch(db.Model):
         and have ``session`` just return ``self``.
         """
 
+    def get_capabilities(self):
+        """ Returns a list of capabilities that a switch supports"""
+        return []
+
+    def has_capability(self, name):
+        """Returns a boolean indicating whether the switch supports <name>"""
+        return name in self.get_capabilities()
+
 
 class SwitchSession(object):
     """A session object for a switch.
@@ -302,14 +310,6 @@ class SwitchSession(object):
         This method is only for use by the test suite.
         """
         assert False, "Subclasses MUST override get_port_networks"
-
-    def get_capabilities(self):
-        """ Returns a list of capabilities that a switch supports"""
-        return []
-
-    def has_capability(self, name):
-        """Returns a boolean indicating whether the switch supports <name>"""
-        return name in self.get_capabilities()
 
 
 class Obm(db.Model):

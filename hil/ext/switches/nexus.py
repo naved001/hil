@@ -51,7 +51,7 @@ class Nexus(Switch):
     password = db.Column(db.String, nullable=False)
     dummy_vlan = db.Column(db.String, nullable=False)
 
-    def get_capabilities():
+    def get_capabilities(self):
         return ['native-network-not-required']
 
     @staticmethod
