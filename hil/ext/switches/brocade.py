@@ -50,6 +50,9 @@ class Brocade(Switch, SwitchSession):
     password = db.Column(db.String, nullable=False)
     interface_type = db.Column(db.String, nullable=False)
 
+    def get_capabilities():
+        return []
+
     @staticmethod
     def validate(kwargs):
         schema.Schema({

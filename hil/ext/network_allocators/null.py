@@ -52,6 +52,9 @@ class NullNetworkAllocator(NetworkAllocator):
     def is_network_id_in_pool(self, net_id):
         return True
 
+    def get_native_channel(self):
+        return "null"
+
 
 def setup(*args, **kwargs):
     """Register a NullNetworkAllocator as the network allocator."""

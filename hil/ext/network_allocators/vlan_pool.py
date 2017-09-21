@@ -90,6 +90,10 @@ class VlanAllocator(NetworkAllocator):
         vlan = Vlan.query.filter_by(vlan_no=net_id).one_or_none()
         return vlan is not None
 
+    def get_native_channel(self):
+        """Return the native channel"""
+        return "vlan/native"
+
 
 class Vlan(db.Model):
     """A VLAN for the Dell switch

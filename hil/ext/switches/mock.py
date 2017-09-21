@@ -100,3 +100,6 @@ class MockSwitch(Switch, SwitchSession):
                 if net is not None:
                     ret[port].append((chan, net))
         return ret
+
+    def has_capability(self, name):
+        return True

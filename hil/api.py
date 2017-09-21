@@ -382,6 +382,7 @@ def node_connect_network(node, nic, network, channel=None):
         ).first() is not None
 
     auth_backend = get_auth_backend()
+    allocator = get_network_allocator()
 
     node = _must_find(model.Node, node)
     nic = _must_find_n(node, model.Nic, nic)
@@ -392,8 +393,6 @@ def node_connect_network(node, nic, network, channel=None):
     auth_backend.require_project_access(node.project)
 
     project = node.project
-
-    allocator = get_network_allocator()
 
     if nic.port is None:
         raise errors.NotFoundError("No port is connected to given nic.")
@@ -420,6 +419,19 @@ def node_connect_network(node, nic, network, channel=None):
         raise errors.BadArgumentError(
             "Channel %r, is not legal for this network." % channel)
 
+    # First, check if the switch supports not having any native networks.
+    # then check if the passed channel is native, if yes, then check in the db
+    # if there's a native network already in use.
+    switch = nic.port.owner
+    native_channel = allocator.get_native_channel()
+    if not switch.has_capability('native-networks-not-required') \
+        and channel != native_channel \
+            and db.session.query(model.NetworkAttachment) \
+                 .filter(model.NetworkAttachment.channel == native_channel) \
+                 .filter(model.NetworkAttachment.nic_id == nic.id) \
+                 .count() == 0:
+                raise errors.BlockedError('Attach a native network first')
+
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           new_network=network,
@@ -441,6 +453,7 @@ def node_detach_network(node, nic, network):
     Raises BadArgumentError if the network is not attached to the nic.
     """
     auth_backend = get_auth_backend()
+    allocator = get_network_allocator()
 
     node = _must_find(model.Node, node)
     network = _must_find(model.Network, network)
@@ -458,6 +471,19 @@ def node_detach_network(node, nic, network):
     if attachment is None:
         raise errors.BadArgumentError(
             "The network is not attached to the nic.")
+
+    # similar checks as described in node_connect_network
+    switch = nic.port.owner
+    native_channel = allocator.get_native_channel()
+    if not switch.has_capability('native-network-not-required') \
+        and attachment.channel == native_channel \
+            and db.session.query(model.NetworkAttachment) \
+                 .filter(model.NetworkAttachment.channel != native_channel) \
+                 .filter(model.NetworkAttachment.nic_id == nic.id) \
+                 .count() > 0:
+                raise errors.BlockedError('Please remove all trunked networks'
+                                          ' before removing native network')
+
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           channel=attachment.channel,

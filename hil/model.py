@@ -303,6 +303,14 @@ class SwitchSession(object):
         """
         assert False, "Subclasses MUST override get_port_networks"
 
+    def get_capabilities(self):
+        """ Returns a list of capabilities that a switch supports"""
+        return []
+
+    def has_capability(self, name):
+        """Returns a boolean indicating whether the switch supports <name>"""
+        return name in self.get_capabilities()
+
 
 class Obm(db.Model):
     """Obm superclass supporting various drivers

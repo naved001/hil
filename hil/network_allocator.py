@@ -87,6 +87,10 @@ class NetworkAllocator(object):
     def is_network_id_in_pool(self, net_id):
         """returns true if net_id is part of the allocation pool"""
 
+    @abstractmethod
+    def get_native_channel(self):
+        """Return the native channel"""
+
 
 _network_allocator = None
 

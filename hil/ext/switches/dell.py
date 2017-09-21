@@ -58,6 +58,9 @@ class PowerConnect55xx(Switch):
             'password': basestring,
         }).validate(kwargs)
 
+    def get_capabilities(self):
+        return ['native-network-not-required']
+
     def session(self):
         return _PowerConnect55xxSession.connect(self)
 

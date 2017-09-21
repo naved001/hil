@@ -58,6 +58,9 @@ class DellNOS9(Switch, SwitchSession):
             'interface_type': basestring,
         }).validate(kwargs)
 
+    def get_capabilities(self):
+        return []
+
     def session(self):
         return self
 
@@ -81,6 +84,7 @@ class DellNOS9(Switch, SwitchSession):
         if channel == 'vlan/native':
             if new_network is None:
                 self._remove_native_vlan(interface)
+                self._port_shutdown(interface)
             else:
                 self._set_native_vlan(interface, new_network)
         else:
@@ -146,6 +150,8 @@ class DellNOS9(Switch, SwitchSession):
 
         Similar to _get_vlans()
         """
+        if not self._is_port_on(interface):
+            self._port_on(interface)
         response = self._get_port_info(interface)
         match = re.search(r'NativeVlanId:(\d+)\.', response)
         if match is not None:
