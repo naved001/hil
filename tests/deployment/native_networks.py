@@ -66,6 +66,9 @@ class TestNativeNetwork(NetworkTest):
 
             Test various things along the way.
             """
+            # port_connect_nic queues a revert-port type action, so perform
+            # that networking action.
+            deferred.apply_networking()
             nodes = self.collect_nodes()
 
             # Create two networks

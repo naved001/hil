@@ -1052,6 +1052,11 @@ def port_connect_nic(switch, port, node, nic):
         raise errors.DuplicateError(port.label)
 
     nic.port = port
+
+    if cfg.has_section('general') and \
+       cfg.has_option('general', 'clean_resources_on_register') and \
+       cfg.getboolean('general', 'clean_resources_on_register'):
+        port_revert(switch.label, port.label)
     db.session.commit()
 
 
