@@ -95,6 +95,11 @@ class TestSwitchSavingToFlash(NetworkTest):
 
     def test_saving_config_file(self):
         """Test saving the switch config to flash."""
+
+        # port_connect_nic queues a revert-port type action, so perform
+        # that networking action.
+        deferred.apply_networking()
+
         api.project_create('anvil-nextgen')
         nodes = self.collect_nodes()
 
