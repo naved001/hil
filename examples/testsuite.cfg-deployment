@@ -4,7 +4,6 @@
 # modify both files according to your local environment.
 [general]
 log_level = debug
-clean_resources_on_register = True
 
 [headnode]
 # Set this to the appropriate interface on your hil master:

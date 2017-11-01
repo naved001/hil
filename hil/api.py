@@ -1053,10 +1053,7 @@ def port_connect_nic(switch, port, node, nic):
 
     nic.port = port
 
-    if cfg.has_section('general') and \
-       cfg.has_option('general', 'clean_resources_on_register') and \
-       cfg.getboolean('general', 'clean_resources_on_register'):
-        port_revert(switch.label, port.label)
+    port_revert(switch.label, port.label)
     db.session.commit()
 
 
