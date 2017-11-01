@@ -1637,7 +1637,6 @@ class TestPortConnectDetachNic:
         with pytest.raises(errors.NotFoundError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
-
     def test_port_connect_nic_no_such_port(self):
         """Connecting a non-existent port raises not found."""
         api.switch_register('sw0',
