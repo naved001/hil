@@ -231,6 +231,7 @@ def populate_server():
                     {'node': 'node-0' + repr(i), 'nic': 'eth0'}
                     )
                 )
+        deferred.apply_networking()
 
     # Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
     http_client.request('PUT', url_switch + 'mock-01/port/gi1/0/8')

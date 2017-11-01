@@ -114,6 +114,7 @@ def test_ensure_legal_operations():
     nic = api._must_find(model.Nic, 'eth0')
 
     api.port_connect_nic('s3048', '1/3', 'compute-01', 'eth0')
+    mock_networking_action()
 
     # connecting a trunked network wihtout having a native should fail.
     # call the method directly and test the API too.

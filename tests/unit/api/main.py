@@ -273,6 +273,7 @@ class TestNetworking:
         for port, node in (PORTS[0], 'node-99'), (PORTS[1], 'node-98'), \
                           (PORTS[2], 'node-97'):
             api.port_connect_nic('sw0', port, node, 'eth0')
+            deferred.apply_networking()
 
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -369,6 +370,7 @@ class TestProjectConnectDetachNode:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         with pytest.raises(errors.BlockedError):
             api.project_detach_node('anvil-nextgen', 'node-99')
@@ -393,6 +395,7 @@ class TestProjectConnectDetachNode:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0', 'hammernet')
@@ -686,6 +689,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
 
         # Check the actual HTTP response and status, not just the success;
         # we should do this at least once in the test suite, since this call
@@ -710,6 +714,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         new_node('node-98')
         api.project_connect_node('anvil-nextgen', 'node-98')   # added
@@ -788,6 +793,7 @@ class TestNodeConnectDetachNetwork:
 
         network_create_simple('hammernet', 'anvil-oldtimer')  # changed
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
 
         with pytest.raises(errors.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
@@ -801,6 +807,7 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
 
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')  # added
         deferred.apply_networking()  # added
 
@@ -821,6 +828,7 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
         network_create_simple('hammernet2', 'anvil-nextgen')  # added
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')  # added
         deferred.apply_networking()  # added
 
@@ -835,6 +843,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         deferred.apply_networking()  # added
 
@@ -876,6 +885,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-98')  # added
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(errors.NotFoundError):
@@ -890,6 +900,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(errors.NotFoundError):
@@ -903,6 +914,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(errors.NotFoundError):
@@ -916,6 +928,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(errors.NotFoundError):
@@ -936,6 +949,7 @@ class TestNodeConnectDetachNetwork:
 #        api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+        deferred.apply_networking()
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(errors.ProjectMismatchError):
@@ -1378,6 +1392,7 @@ class TestNetworkCreateDelete:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0', 'hammernet')
@@ -1401,6 +1416,7 @@ class TestNetworkCreateDelete:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
+        deferred.apply_networking()
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         with pytest.raises(errors.BlockedError):
             api.network_delete('hammernet')
@@ -1597,6 +1613,7 @@ class Test_show_port:
         assert json.loads(api.show_port('sw0', PORTS[2])) == {}
         # connect the port to a nic, and see if show port agrees
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        deferred.apply_networking()
         assert json.loads(api.show_port('sw0', PORTS[2])) == {
                         'node': u'compute-01',
                         'nic': 'eth0',
@@ -1611,6 +1628,7 @@ class TestPortConnectDetachNic:
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        deferred.apply_networking()
 
     def test_port_connect_nic_no_such_switch(self):
         """Connecting to a non-existent switch raises not found."""
@@ -1618,6 +1636,7 @@ class TestPortConnectDetachNic:
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(errors.NotFoundError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+
 
     def test_port_connect_nic_no_such_port(self):
         """Connecting a non-existent port raises not found."""
@@ -1659,6 +1678,7 @@ class TestPortConnectDetachNic:
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        deferred.apply_networking()
         with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
@@ -1672,6 +1692,7 @@ class TestPortConnectDetachNic:
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        deferred.apply_networking()
         with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[3], 'compute-01', 'eth0')
 
@@ -1686,6 +1707,7 @@ class TestPortConnectDetachNic:
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        deferred.apply_networking()
         with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-02', 'eth1')
 
@@ -1694,6 +1716,7 @@ class TestPortConnectDetachNic:
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        deferred.apply_networking()
         api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_no_such_port(self):
@@ -1719,6 +1742,7 @@ class TestPortConnectDetachNic:
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        deferred.apply_networking()
 
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'compute-01')
@@ -1979,9 +2003,11 @@ class TestQuery_unpopulated_db:
         api.project_connect_node('anvil-nextgen', 'robocop')
         network_create_simple('pxe', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[0], 'robocop', 'eth0')
+        deferred.apply_networking()
         api.node_connect_network('robocop', 'eth0', 'pxe')
         network_create_simple('storage', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[1], 'robocop', 'wlan0')
+        deferred.apply_networking()
         api.node_connect_network('robocop', 'wlan0', 'storage')
         deferred.apply_networking()
 
@@ -2201,6 +2227,7 @@ class TestShowNetwork:
         new_node('node-anvil')
         api.node_register_nic('node-anvil', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'node-anvil', 'eth0')
+        deferred.apply_networking()
 
         # create a project and a network owned by it. Also connect a node to it
         api.project_create('anvil-nextgen')
@@ -2224,6 +2251,7 @@ class TestShowNetwork:
         api.node_register_nic('node-pineapple', 'eth0', 'DE:AD:BE:EF:20:14')
         api.switch_register_port('sw0', PORTS[1])
         api.port_connect_nic('sw0', PORTS[1], 'node-pineapple', 'eth0')
+        deferred.apply_networking()
 
         # create a new project and give it access to spiderwebs network, and
         # then connect its node to the network.
