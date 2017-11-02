@@ -16,7 +16,7 @@ The general approach is as follows:
 
 """
 import pytest
-from hil import api, model, server
+from hil import api, model, server, deferred
 from hil.test_common import config_testsuite, config_merge, initial_db, \
     fail_on_log_warnings
 from hil.config import cfg, load_extensions
@@ -60,6 +60,7 @@ def create_pending_actions_db():
                         )
     api.switch_register_port('sw0', 'gi1/0/4')
     api.port_connect_nic('sw0', 'gi1/0/4', 'node-1', 'pxe')
+    deferred.apply_networking()
     api.project_connect_node('runway', 'node-1')
     api.network_create('runway_pxe', 'runway', 'runway', '')
 

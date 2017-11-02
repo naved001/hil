@@ -599,7 +599,7 @@ INSERT INTO network_projects (project_id, network_id) VALUES (1, 1);
 -- Data for Name: networking_action; Type: TABLE DATA; Schema: public; Owner: hil
 --
 
-INSERT INTO networking_action (id, nic_id, new_network_id, channel) VALUES (1, 1, 1, 'null');
+INSERT INTO networking_action (id, nic_id, new_network_id, channel) VALUES (2, 1, 1, 'null');
 
 
 --
