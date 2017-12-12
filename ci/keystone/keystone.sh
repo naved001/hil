@@ -50,6 +50,7 @@ case "$1" in
     pip install \
         -r requirements.txt \
         -c https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=${keystone_commit}
+    pip install python-memcached
     pip install .
     pip install uwsgi # To actually run keystone; no webserver in the deps.
 
