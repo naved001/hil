@@ -9,6 +9,7 @@ from os.path import dirname, join
 import re
 import requests
 import schema
+import time
 
 from hil.migrations import paths
 from hil.model import db, Switch, SwitchSession
@@ -280,6 +281,56 @@ class Brocade(Switch, SwitchSession):
         url = self._construct_url(interface, suffix='trunk/tag/native-vlan')
         self._make_request('DELETE', url, acceptable_error_codes=(404,))
 
+    def save_running_config(self):
+        url = self.hostname + '/rest/' + 'operational-state/bna-config-cmd'
+        body = '<bna-config-cmd><src>running-config</src><dest>startup-config \
+                </dest></bna-config-cmd>'
+        response = self._make_request('POST', url, data=body)
+
+        # check if it succesfully completed and log it
+        tag = '{urn:brocade.com:mgmt:brocade-ras}session-id'
+        root = etree.fromstring(response.text)
+        session_id = root.find(tag).text
+        if self._check_bna_config_status(session_id):
+            logger.debug('Saved running config to startup config')
+        else:
+            print "failed"
+            logger.debug('Configuration not saved in reasonable time')
+
+    def get_config(self, config_type):
+        url = self.hostname + '/rest/config/' + config_type
+        response = self._make_request('GET', url)
+
+    def _check_bna_config_status(self, id):
+        """ This function checks if the bna_config_command was successful by
+        polling on the session_id returned by running the command
+
+        Args:
+            id: the id of configuration command whose status we want to check
+
+        Returns a boolean indicating success/failure.
+        """
+
+        url = self.hostname + '/rest/' +  \
+            'operational-state/bna-config-cmd-status'
+        body = '<bna-config-cmd-status><session-id>%s</session-id> \
+                </bna-config-cmd-status>' % id
+        tag = '{urn:brocade.com:mgmt:brocade-ras}status'
+
+        # Check status 6 times and sleep for 2 seconds before checking again.
+        RETRIES = 6
+        while RETRIES:
+            response = self._make_request('POST', url, data=body)
+            root = etree.fromstring(response.text)
+            status = root.find(tag).text
+            if status == 'completed':
+                print RETRIES
+                return True
+            else:
+                RETRIES -= 1
+            time.sleep(2)
+        return False
+
     def _construct_url(self, interface, suffix=''):
         """ Construct the API url for a specific interface appending suffix.
 
@@ -323,3 +374,4 @@ class Brocade(Switch, SwitchSession):
                               'Response: %s and '
                               'Reason: %s', r.text, r.reason)
         return r
+
