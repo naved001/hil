@@ -37,45 +37,6 @@ class InvalidAPIArgumentsException(Exception):
     """Exception indicating that the user passed invalid arguments."""
 
 
-def cmd(f):
-    """A decorator for CLI commands.
-
-    This decorator firstly adds the function to a dictionary of valid CLI
-    commands, secondly adds exception handling for when the user passes the
-    wrong number of arguments, and thirdly generates a 'usage' description and
-    puts it in the usage dictionary.
-    """
-
-    # Build the 'usage' info for the help:
-    args, varargs, _, _ = inspect.getargspec(f)
-    num_args = len(args)  # used later to validate passed args.
-    showee = [f.__name__] + ['<%s>' % name for name in args]
-    args = ' '.join(['<%s>' % name for name in args])
-    if varargs:
-        showee += ['<%s...>' % varargs]
-    usage_dict[f.__name__] = ' '.join(showee)
-
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        """Wrapper that implements the functionality described above."""
-        try:
-            # For commands which accept a variable number of arguments,
-            # num_args is the *minimum* required arguments; there is no
-            # maximum. For other commands, there must be *exactly* `num_args`
-            # arguments:
-            if len(args) < num_args or not varargs and len(args) > num_args:
-                raise InvalidAPIArgumentsException()
-            f(*args, **kwargs)
-        except InvalidAPIArgumentsException as e:
-            if e.message != '':
-                sys.stderr.write(e.message + '\n\n')
-            sys.stderr.write('Invalid arguments.  Usage:\n')
-            help(f.__name__)
-
-    command_dict[f.__name__] = wrapped
-    return wrapped
-
-
 def setup_http_client():
     """Set `http_client` to a valid instance of `HTTPClient`
 
@@ -218,13 +179,11 @@ def do_delete(url):
 # DELETE UPTIL HERE once all calls have client library support.
 
 
-@cmd
 def version():
     """Check hil version"""
     sys.stdout.write("HIL version: %s\n" % VERSION)
 
 
-@cmd
 def serve(port):
     """Run a development api server. Don't use this in production."""
     try:
@@ -254,42 +213,6 @@ def serve(port):
     rest.serve(port, debug=debug)
 
 
-@cmd
-def serve_networks():
-    """Start the HIL networking server"""
-    from hil import model, deferred
-    from time import sleep
-    config.setup()
-    server.init()
-    server.register_drivers()
-    server.validate_state()
-    model.init_db()
-    migrations.check_db_schema()
-
-    # Check if config contains usable sleep_time
-    if (cfg.has_section('network-daemon') and
-            cfg.has_option('network-daemon', 'sleep_time')):
-        try:
-            sleep_time = cfg.getfloat('network-daemon', 'sleep_time')
-        except (ValueError):
-            sys.exit("Error: sleep_time set to non-float value")
-        if sleep_time <= 0 or sleep_time >= 3600:
-            sys.exit("Error: sleep_time not within bounds "
-                     "0 < sleep_time < 3600")
-        if sleep_time > 60:
-            logger.warn('sleep_time greater than 1 minute.')
-    else:
-        sleep_time = 2
-
-    while True:
-        # Empty the journal until it's empty; then delay so we don't tight
-        # loop.
-        while deferred.apply_networking():
-            pass
-        sleep(sleep_time)
-
-
-@cmd
 def list_users():
     """List all users when the database authentication is active.
 
@@ -300,7 +223,6 @@ def list_users():
         sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
 
 
-@cmd
 def user_create(username, password, is_admin):
     """Create a user <username> with password <password>.
 
@@ -314,7 +236,6 @@ def user_create(username, password, is_admin):
     C.user.create(username, password, is_admin == 'admin')
 
 
-@cmd
 def user_set_admin(username, is_admin):
     """Changes the admin status of user <username>.
 
@@ -328,74 +249,62 @@ def user_set_admin(username, is_admin):
     C.user.set_admin(username, is_admin == 'admin')
 
 
-@cmd
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
     C.network.create(network, owner, access, net_id)
 
 
-@cmd
 def network_create_simple(network, project):
     """Create <network> owned by project.  Specific case of network_create"""
     C.network.create(network, project, project, "")
 
 
-@cmd
 def network_delete(network):
     """Delete a <network>"""
     C.network.delete(network)
 
 
-@cmd
 def user_delete(username):
     """Delete the user <username>"""
     C.user.delete(username)
 
 
-@cmd
 def list_projects():
     """List all projects"""
     q = C.project.list()
     sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
 
 
-@cmd
 def user_add_project(user, project):
     """Add <user> to <project>"""
     C.user.add(user, project)
 
 
-@cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
     C.user.remove(user, project)
 
 
-@cmd
 def network_grant_project_access(project, network):
     """Add <project> to <network> access"""
     C.network.grant_access(project, network)
 
 
-@cmd
 def network_revoke_project_access(project, network):
     """Remove <project> from <network> access"""
     C.network.revoke_access(project, network)
 
 
-@cmd
 def project_create(project):
     """Create a <project>"""
     C.project.create(project)
 
 
-@cmd
 def project_delete(project):
     """Delete <project>"""
     C.project.delete(project)
 
 
-@cmd
 def headnode_create(headnode, project, base_img):
     """Create a <headnode> in a <project> with <base_img>"""
     url = object_url('headnode', headnode)
@@ -403,40 +312,34 @@ def headnode_create(headnode, project, base_img):
                       'base_img': base_img})
 
 
-@cmd
 def headnode_delete(headnode):
     """Delete <headnode>"""
     url = object_url('headnode', headnode)
     do_delete(url)
 
 
-@cmd
 def project_connect_node(project, node):
     """Connect <node> to <project>"""
     C.project.connect(project, node)
 
 
-@cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
     C.project.detach(project, node)
 
 
-@cmd
 def headnode_start(headnode):
     """Start <headnode>"""
     url = object_url('headnode', headnode, 'start')
     do_post(url)
 
 
-@cmd
 def headnode_stop(headnode):
     """Stop <headnode>"""
     url = object_url('headnode', headnode, 'stop')
     do_post(url)
 
 
-@cmd
 def node_register(node, subtype, *args):
     """Register a node named <node>, with the given type
         if obm is of type: ipmi then provide arguments
@@ -445,25 +348,21 @@ def node_register(node, subtype, *args):
     C.node.register(node, subtype, *args)
 
 
-@cmd
 def node_delete(node):
     """Delete <node>"""
     C.node.delete(node)
 
 
-@cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
     C.node.power_cycle(node)
 
 
-@cmd
 def node_power_off(node):
     """Power off <node>"""
     C.node.power_off(node)
 
 
-@cmd
 def node_set_bootdev(node, dev):
     """
     Sets <node> to boot from <dev> persistently
@@ -474,7 +373,6 @@ def node_set_bootdev(node, dev):
     C.node.set_bootdev(node, dev)
 
 
-@cmd
 def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>
@@ -482,65 +380,55 @@ def node_register_nic(node, nic, macaddr):
     C.node.add_nic(node, nic, macaddr)
 
 
-@cmd
 def node_delete_nic(node, nic):
     """Delete a <nic> on a <node>"""
     C.node.remove_nic(node, nic)
 
 
-@cmd
 def headnode_create_hnic(headnode, nic):
     """Create a <nic> on the given <headnode>"""
     url = object_url('headnode', headnode, 'hnic', nic)
     do_put(url)
 
 
-@cmd
 def headnode_delete_hnic(headnode, nic):
     """Delete a <nic> on a <headnode>"""
     url = object_url('headnode', headnode, 'hnic', nic)
     do_delete(url)
 
 
-@cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
     print C.node.connect_network(node, nic, network, channel)
 
 
-@cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
     print C.node.detach_network(node, nic, network)
 
 
-@cmd
 def headnode_connect_network(headnode, nic, network):
     """Connect <headnode> to <network> on given <nic>"""
     url = object_url('headnode', headnode, 'hnic', nic, 'connect_network')
     do_post(url, data={'network': network})
 
 
-@cmd
 def headnode_detach_network(headnode, hnic):
     """Detach <headnode> from the network on given <nic>"""
     url = object_url('headnode', headnode, 'hnic', hnic, 'detach_network')
     do_post(url)
 
 
-@cmd
 def metadata_set(node, label, value):
     """Register metadata with <label> and <value> with <node> """
     C.node.metadata_set(node, label, value)
 
 
-@cmd
 def metadata_delete(node, label):
     """Delete metadata with <label> from a <node>"""
     C.node.metadata_delete(node, label)
 
 
-@cmd
 def switch_register(switch, subtype, *args):
     """Register a switch with name <switch> and
     <subtype>, <hostname>, <username>,  <password>
@@ -605,50 +493,42 @@ def switch_register(switch, subtype, *args):
     do_put(url, data=switchinfo)
 
 
-@cmd
 def switch_delete(switch):
     """Delete a <switch> """
     C.switch.delete(switch)
 
 
-@cmd
 def list_switches():
     """List all switches"""
     q = C.switch.list()
     sys.stdout.write('%s switches :    ' % len(q) + " ".join(q) + '\n')
 
 
-@cmd
 def port_register(switch, port):
     """Register a <port> with <switch> """
     C.port.register(switch, port)
 
 
-@cmd
 def port_delete(switch, port):
     """Delete a <port> from a <switch>"""
     C.port.delete(switch, port)
 
 
-@cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
     C.port.connect_nic(switch, port, node, nic)
 
 
-@cmd
 def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
     C.port.detach_nic(switch, port)
 
 
-@cmd
 def port_revert(switch, port):
     """Detach a <port> on a <switch> from all attached networks."""
     print C.port.port_revert(switch, port)
 
 
-@cmd
 def list_network_attachments(network, project):
     """List nodes connected to a network
     <project> may be either "all" or a specific project name.
@@ -656,7 +536,6 @@ def list_network_attachments(network, project):
     print C.network.list_network_attachments(network, project)
 
 
-@cmd
 def list_nodes(is_free):
     """List all nodes or all free nodes
 
@@ -672,14 +551,12 @@ def list_nodes(is_free):
         sys.stdout.write('Error: %s is an invalid argument\n' % (is_free))
 
 
-@cmd
 def list_project_nodes(project):
     """List all nodes attached to a <project>"""
     q = C.project.nodes_in(project)
     sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
 
 
-@cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
     q = C.project.networks_in(project)
@@ -688,7 +565,6 @@ def list_project_networks(project):
             )
 
 
-@cmd
 def show_switch(switch):
     """Display information about <switch>"""
     q = C.switch.show(switch)
@@ -696,13 +572,11 @@ def show_switch(switch):
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
-@cmd
 def show_port(switch, port):
     """Show what's connected to <port>"""
     print C.port.show(switch, port)
 
 
-@cmd
 def list_networks():
     """List all networks"""
     q = C.network.list()
@@ -710,7 +584,6 @@ def list_networks():
         sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
 
 
-@cmd
 def show_network(network):
     """Display information about <network>"""
     q = C.network.show(network)
@@ -718,7 +591,6 @@ def show_network(network):
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
-@cmd
 def show_node(node):
     """Display information about a <node>
 
@@ -734,47 +606,40 @@ def show_node(node):
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
-@cmd
 def list_project_headnodes(project):
     """List all headnodes attached to a <project>"""
     url = object_url('project', project, 'headnodes')
     do_get(url)
 
 
-@cmd
 def show_headnode(headnode):
     """Display information about a <headnode>"""
     url = object_url('headnode', headnode)
     do_get(url)
 
 
-@cmd
 def list_headnode_images():
     """Display registered headnode images"""
     url = object_url('headnode_images')
     do_get(url)
 
 
-@cmd
 def show_console(node):
     """Display console log for <node>"""
     url = object_url('node', node, 'console')
     do_get(url)
 
 
-@cmd
 def start_console(node):
     """Start logging console output from <node>"""
     C.node.start_console(node)
 
 
-@cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
     C.node.stop_console(node)
 
 
-@cmd
 def create_admin_user(username, password):
     """Create an admin user. Only valid for the database auth backend.
 
@@ -798,7 +663,6 @@ def create_admin_user(username, password):
     db.session.commit()
 
 
-@cmd
 def list_active_extensions():
     """List active extensions by type. """
     all_extensions = C.extensions.list_active()
@@ -809,13 +673,11 @@ def list_active_extensions():
             print ext
 
 
-@cmd
 def show_networking_action(status_id):
     """Displays the status of the networking action"""
     print C.node.show_networking_action(status_id)
 
 
-@cmd
 def help(*commands):
     """Display usage of all following <commands>, or of all commands if none
     are given
@@ -829,29 +691,3 @@ def help(*commands):
         # and the docstring (as a #comment).
         sys.stdout.write('  %s\n' % usage_dict[name])
         sys.stdout.write('      %s\n' % command_dict[name].__doc__)
-
-
-def main():
-    """Entry point to the CLI.
-
-    There is a script located at ${source_tree}/scripts/hil, which invokes
-    this function.
-    """
-    ensure_not_root()
-
-    if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
-        # Display usage for all commands
-        help()
-        sys.exit(1)
-    else:
-        setup_http_client()
-        try:
-            command_dict[sys.argv[1]](*sys.argv[2:])
-        except FailedAPICallException as e:
-            sys.exit('Error: %s\n' % e.message)
-        except InvalidAPIArgumentsException as e:
-            sys.exit('Error: %s\n' % e.message)
-        except BadArgumentError as e:
-            sys.exit('Error: %s\n' % e.message)
-        except Exception as e:
-            sys.exit('Unexpected error: %s\n' % e.message)
