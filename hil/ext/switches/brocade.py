@@ -16,7 +16,8 @@ from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.errors import SwitchError
-from hil.ext.switches.common import check_native_networks, parse_vlans
+from hil.ext.switches.common import check_native_networks, parse_vlans, \
+ should_save
 
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
@@ -96,11 +97,15 @@ class Brocade(Switch, SwitchSession):
             else:
                 assert new_network == vlan_id
                 self._add_vlan_to_trunk(interface, vlan_id)
+        if should_save(self):
+            self.save_running_config()
 
     def revert_port(self, port):
         self._remove_all_vlans_from_trunk(port)
         if self._get_native_vlan(port) is not None:
             self._remove_native_vlan(port)
+        if should_save(self):
+            self.save_running_config()
 
     def get_port_networks(self, ports):
         """Get port configurations of the switch.
@@ -294,12 +299,46 @@ class Brocade(Switch, SwitchSession):
         if self._check_bna_config_status(session_id):
             logger.debug('Saved running config to startup config')
         else:
-            print "failed"
             logger.debug('Configuration not saved in reasonable time')
 
     def get_config(self, config_type):
-        url = self.hostname + '/rest/config/' + config_type
-        response = self._make_request('GET', url)
+        # This is the only method that uses pexpect to connect to the switch
+        # because the REST API does not return the startup config file.
+        # This method is only used by the test suite, the rest of the switch
+        # functionality does not care about this method.
+
+        # this is how we get the running config file using the API
+        # I couldn't find a way to get the startup config file similarly.
+        # url = self.hostname + '/rest/config/' + config_type
+        # response = self._make_request('GET', url)
+
+        from hil.ext.switches._console import login, get_prompts
+
+        # is this safe to assume that there will be http in front of the
+        # hostname? also create a deep copy rather than modifying the original
+        # object
+        original_hostname = self.hostname
+        self.hostname = self.hostname.replace('http://', '')
+        console = login(self)
+        self.hostname = original_hostname
+
+        console.sendline('')
+        prompts = get_prompts(console)
+
+        console.sendline('terminal length 0')
+        console.expect(r'[\r\n]+.+# ')
+
+        # dunno why, but without asking twice, I didn't get the desired
+        # response. I'll debug this
+        console.sendline('show ' + config_type + '-config')
+        console.expect(r'[\r\n]+.+# ')
+        console.sendline('show ' + config_type + '-config')
+        console.expect(r'[\r\n]+.+# ')
+
+        config = console.after
+        console.sendline('terminal length 40')
+        console.sendline('exit')
+        return config
 
     def _check_bna_config_status(self, id):
         """ This function checks if the bna_config_command was successful by
@@ -324,7 +363,6 @@ class Brocade(Switch, SwitchSession):
             root = etree.fromstring(response.text)
             status = root.find(tag).text
             if status == 'completed':
-                print RETRIES
                 return True
             else:
                 RETRIES -= 1
@@ -374,4 +412,3 @@ class Brocade(Switch, SwitchSession):
                               'Response: %s and '
                               'Reason: %s', r.text, r.reason)
         return r
-

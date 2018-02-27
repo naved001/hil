@@ -53,17 +53,6 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'site_layout')
 
 
-@pytest.fixture
-def is_brocade():
-    """open the site-layout file to see if we have a brocade switch"""
-
-    with open('site-layout.json') as layout_data:
-        layout = json.load(layout_data)
-    switch_type = layout['switches'][0]['type']
-    return (switch_type == BROCADE)
-
-
-@pytest.mark.skipif(is_brocade(), reason="Skipping because brocade switch")
 class TestSwitchSavingToFlash(NetworkTest):
     """ saves the running config to the flash memory and tests if it succeeded
     by comparing the running and startup config files"""
