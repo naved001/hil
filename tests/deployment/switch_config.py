@@ -11,9 +11,6 @@ from hil.test_common import config, config_testsuite, fresh_database, \
     NetworkTest, network_create_simple, server_init
 
 import pytest
-import json
-
-BROCADE = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
 
 
 @pytest.fixture
@@ -31,6 +28,9 @@ def configure():
             'save': 'True'
         },
         'hil.ext.switches.dellnos9': {
+            'save': 'True'
+        },
+        'hil.ext.switches.brocade': {
             'save': 'True'
         }
     })
