@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
 set -ex
 
+# Exit if we are only running unit tests
+if [ $TEST_SUITE = unit ]; then
+    exit 0
+fi
+
 # The version of Go available in trusty by default is too old; install
 # a newer one from PPA. See also:
 #
