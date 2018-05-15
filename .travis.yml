@@ -5,6 +5,8 @@ python:
 matrix:
   allow_failures:
     - python: "3.4"
+go:
+  - "1.10"
 
 virtualenv:
   system_site_packages: true
@@ -40,7 +42,6 @@ install:
   - sh -e ci/hil_install.sh
   - sh -e ci/apache/install.sh
   - sh -e ci/keystone/install.sh
-  - sh -e ci/obmd/install.sh
 
 script:
   - sh -e ci/run_tests.sh
