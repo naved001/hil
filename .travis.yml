@@ -17,10 +17,6 @@ cache:
 
 addons:
   postgresql: "9.3"
-  apt:
-    packages:
-      - apache2
-      - libapache2-mod-wsgi
 
 branches:
   except:

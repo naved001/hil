@@ -5,6 +5,9 @@ if [ $TEST_SUITE = unit ]; then
 	exit 0
 fi
 
+# Install apache
+sudo apt-get install apache2 libpache2-mod-wsgi -y
+
 # Apache Setup
 sudo chown -R travis:travis /var/www
 mkdir /var/www/hil
