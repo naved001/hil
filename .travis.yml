@@ -16,7 +16,6 @@ cache:
   - pip
 
 addons:
-  postgresql: "9.3"
   apt:
     packages:
       - apache2
@@ -34,10 +33,12 @@ env:
   - TEST_SUITE=unit DB=postgres SPOOF_MANUAL_MIGRATIONS=true
   - TEST_SUITE=integration DB=postgres SPOOF_MANUAL_MIGRATIONS=true
 
+before_install:
+  - sh -e ci/install_postgres.sh
+
 install:
   # A dependency might use new pip syntax; upgrade to prevent breakage. See #771
   - pip install --upgrade pip
-  - sh -e ci/optimize_postgres.sh
   - sh -e ci/hil_install.sh
   - sh -e ci/apache/install.sh
   - sh -e ci/keystone/install.sh

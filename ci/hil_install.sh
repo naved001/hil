@@ -5,14 +5,6 @@ cp ci/testsuite.cfg.$DB testsuite.cfg
 sudo cp ci/apache/hil.cfg.$DB /etc/hil.cfg
 sudo chown travis:travis /etc/hil.cfg
 
-# Database Setup
-if [ $DB = postgres ]; then
-    sudo apt-get install -y python-psycopg2
-    psql --version
-    psql -c 'CREATE DATABASE hil_tests;' -U postgres
-    psql -c 'CREATE DATABASE hil;' -U postgres
-fi
-
 # Address #577 via
 # https://stackoverflow.com/questions/2192323/what-is-the-python-egg-cache-python-egg-cache
 mkdir -p ~/.python-eggs

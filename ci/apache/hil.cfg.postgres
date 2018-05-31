@@ -14,7 +14,7 @@ libvirt_endpoint = qemu:///system
 endpoint = http://127.0.0.1
 
 [database]
-uri = postgresql://postgres@localhost/hil
+uri = postgresql://postgres:hello@localhost:5433/hil
 
 [extensions]
 hil.ext.obm.mock =

@@ -9,4 +9,4 @@ dry_run = True
 [headnode]
 base_imgs = base-headnode, img1, img2, img3, img4
 [database]
-uri = postgresql://postgres@localhost/hil_tests
+uri = postgresql://postgres:hello@localhost:5433/hil_tests
