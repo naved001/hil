@@ -1,7 +1,7 @@
 """Test the database auth backend."""
 from hil import api, model, config, errors
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
-    ModelTest, fail_on_log_warnings, server_init
+    ModelTest, fail_on_log_warnings, server_init, dummy_verify
 from hil.flaskapp import app
 from hil.model import db
 from hil.rest import init_auth, local
@@ -12,6 +12,7 @@ import json
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 server_init = pytest.fixture(server_init)
+dummy_verify = pytest.fixture(dummy_verify)
 
 
 @pytest.fixture
@@ -149,6 +150,7 @@ def use_fixtures(auth_fixture):
     test different levels of authorization/authentication
     """
     return pytest.mark.usefixtures('configure',
+                                   'dummy_verify',
                                    'initial_db',
                                    'server_init',
                                    auth_fixture,
@@ -348,7 +350,7 @@ class TestUserAddRemoveProject(DBAuthTestCase):
             self.dbauth.user_remove_project('charlie', 'acme-corp')
 
 
-@pytest.mark.usefixtures('configure', 'initial_db')
+@pytest.mark.usefixtures('configure', 'initial_db', 'dummy_verify')
 class TestUserModel(ModelTest):
     """Basic sanity check for the User model.
 

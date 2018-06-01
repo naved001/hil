@@ -24,6 +24,7 @@ import re
 from urlparse import urlparse
 from base64 import urlsafe_b64encode
 from hil.client.client import HTTPClient, RequestsHTTPClient, HTTPResponse
+from passlib.hash import sha512_crypt
 
 uuid_pattern = re.compile(
             "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
@@ -752,3 +753,32 @@ def spoof_enable_obm(nodename):
     node = api.get_or_404(Node, nodename)
     node.obmd_node_token = '0123456789'
     db.session.commit()
+
+
+def dummy_verify():
+    """replace sha512_crypt.verify with something faster (albeit broken).
+
+    This fixture is for testing User related client calls which use database
+    authentication backend.
+
+    This fixture works around a serious consequence of using the database
+    backend: doing password hashing is **SLOW** (by design; the algorithms
+    are intended to make brute-forcing hard), and we've got fixtures where
+    we're going through the request handler tens of times for every test
+    (before even hitting the test itself).
+
+    So, this fixture monkey-patches sha512_crypt.verify (the function that
+    does the work of checking the password), replacing it with a dummy
+    implementation. At the time of writing, this shaves about half an hour
+    off of our Travis CI runs.
+    """
+
+    @staticmethod
+    def dummy(*args, **kwargs):
+        """dummy replacement, which just returns True."""
+        return True
+
+    old = sha512_crypt.verify
+    sha512_crypt.verify = dummy  # override the verify() function
+    yield  # Test runs here
+    sha512_crypt.verify = old  # restore the old implementation.

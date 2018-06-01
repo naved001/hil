@@ -5,7 +5,7 @@ from hil.errors import BadArgumentError, UnknownSubtypeError
 from hil.client.client import Client
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern, \
-    obmd_cfg, HybridHTTPClient, initial_db
+    obmd_cfg, HybridHTTPClient, initial_db, dummy_verify
 from hil.model import db
 from hil import config, deferred
 
@@ -13,7 +13,6 @@ import json
 import pytest
 import requests
 
-from passlib.hash import sha512_crypt
 
 ep = "http://127.0.0.1:8000"
 username = "hil_user"
@@ -30,36 +29,7 @@ fresh_database = pytest.fixture(fresh_database)
 server_init = pytest.fixture(server_init)
 obmd_cfg = pytest.fixture(obmd_cfg)
 intial_db = pytest.fixture(initial_db)
-
-
-@pytest.fixture
-def dummy_verify():
-    """replace sha512_crypt.verify with something faster (albeit broken).
-
-    This fixture is for testing User related client calls which use database
-    authentication backend.
-
-    This fixture works around a serious consequence of using the database
-    backend: doing password hashing is **SLOW** (by design; the algorithms
-    are intended to make brute-forcing hard), and we've got fixtures where
-    we're going through the request handler tens of times for every test
-    (before even hitting the test itself).
-
-    So, this fixture monkey-patches sha512_crypt.verify (the function that
-    does the work of checking the password), replacing it with a dummy
-    implementation. At the time of writing, this shaves about half an hour
-    off of our Travis CI runs.
-    """
-
-    @staticmethod
-    def dummy(*args, **kwargs):
-        """dummy replacement, which just returns True."""
-        return True
-
-    old = sha512_crypt.verify
-    sha512_crypt.verify = dummy  # override the verify() function
-    yield  # Test runs here
-    sha512_crypt.verify = old  # restore the old implementation.
+dummy_verify = pytest.fixture(dummy_verify)
 
 
 @pytest.fixture
