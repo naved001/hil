@@ -95,7 +95,7 @@ class DellNOS9Ansible(Switch, _vlan_http.Session):
 
     def _is_port_on(self, port):
         """ Returns a boolean that tells the status of a switchport"""
-        command = ["show running-config interface gigabitethernet " + port]
+        command = "show running-config interface gigabitethernet " + port
         task = ansible_dellos9.run_show_command(command, "check if port is on")
         response = ansible_dellos9.run_task(task, self.host_information)
         match = re.search(r'no shutdown', response)
@@ -184,7 +184,7 @@ class DellNOS9Ansible(Switch, _vlan_http.Session):
             vlan: vlan to remove
         """
         command = self._remove_vlan_command(port, vlan)
-        task = ansible_dellos9.run_show_command(command)
+        task = ansible_dellos9.run_config_command(command)
         ansible_dellos9.run_task(task, self.host_information)
 
     # def _remove_all_vlans_from_trunk(self, port):
