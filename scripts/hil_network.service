@@ -4,8 +4,8 @@ After=network.target
 After=postgresql
 
 [Service]
-User=hil_user
-Group=hil_user
+User=hil
+Group=hil
 WorkingDirectory=/var/lib/hil/
 ExecStart=/usr/bin/hil-admin serve-networks
 Type=simple
