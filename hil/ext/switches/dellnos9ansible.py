@@ -184,7 +184,7 @@ class DellNOS9Ansible(Switch, _vlan_http.Session):
             vlan: vlan to remove
         """
         command = self._remove_vlan_command(port, vlan)
-        task = ansible_dellos9.run_config_command(command)
+        task = ansible_dellos9.run_config_command(command, "remove trunk vlan")
         ansible_dellos9.run_task(task, self.host_information)
 
     # def _remove_all_vlans_from_trunk(self, port):

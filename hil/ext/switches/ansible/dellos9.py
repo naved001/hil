@@ -90,10 +90,9 @@ def port_on(port):
 def add_trunk_vlan(port, trunk_vlan):
     """Sets the VLANs using the dellos9_config module"""
     goto_switchport = ['interface gigabitethernet ' + port]
-    enable_switchport = ['portmode hybrid', 'switchport', 'no shutdown']
     add_vlan = ['interface vlan ' + trunk_vlan,
                 'tagged gigabitethernet ' + port]
-    commands = goto_switchport + enable_switchport + add_vlan
+    commands = goto_switchport + add_vlan
     return run_config_command(commands, "add vlan to trunk")
 
 
@@ -145,7 +144,6 @@ def run_task(tasks, hosts):
         'playbook': [playbook],
         'inventory': {'all': hosts},
     }
-
     result = ansible_runner.run(**kwargs)
 
     stdout = result.stdout.read()
