@@ -3,7 +3,6 @@ import click
 import sys
 import pkg_resources
 
-from hil.client.base import FailedAPICallException
 from hil.commands.util import ensure_not_root
 from hil.cli import node, project, network, switch, port, user, misc, headnode
 
@@ -32,7 +31,5 @@ def main():
     ensure_not_root()
     try:
         cli()
-    except FailedAPICallException as e:
-        sys.exit('Error: %s\n' % e.message)
     except Exception as e:
         sys.exit(e)
