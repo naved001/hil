@@ -96,7 +96,6 @@ def set_admin_auth():
     get_auth_backend().set_admin(True)
 
 
-@pytest.fixture
 def switchinit():
     """Create a switch with one port"""
     api.switch_register('sw0',
@@ -105,6 +104,13 @@ def switchinit():
                         password="switch_pass",
                         hostname="switchname")
     api.switch_register_port('sw0', PORTS[2])
+
+
+@pytest.fixture
+def switchinit_fixture(name="switchinit"):
+    """A fixture that calls switchinit because pytest does not let us
+    directly call a fixture anymore"""
+    return switchinit()
 
 
 def new_node(name):
@@ -348,7 +354,7 @@ class TestProjectConnectDetachNode:
         with pytest.raises(errors.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
-    def test_project_detach_node_on_network(self, switchinit):
+    def test_project_detach_node_on_network(self, switchinit_fixture):
         """Tests that project_detach_node fails if the node is on a network."""
         api.project_create('anvil-nextgen')
         new_node('node-99')
@@ -369,7 +375,8 @@ class TestProjectConnectDetachNode:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.project_detach_node('anvil-nextgen', 'node-99')
 
-    def test_project_detach_node_removed_from_network(self, switchinit):
+    def test_project_detach_node_removed_from_network(self,
+                                                      switchinit_fixture):
         """Same as above, but we connect/disconnect from the network.
 
         ...rather than just having the node disconnected to begin with.
@@ -576,7 +583,7 @@ class TestNodeRegisterDeleteNic:
         with pytest.raises(errors.NotFoundError):
             api.node_delete_nic('compute-02', '01-eth0')
 
-    def test_node_delete_nic_after_networking_action(self, switchinit):
+    def test_node_delete_nic_after_networking_action(self, switchinit_fixture):
         """
         Test node_delete_nic during various stages of a networking_action
 
@@ -695,7 +702,7 @@ class TestNodeRegisterDeleteMetadata:
 class TestNodeConnectDetachNetwork:
     """Test node_{connect,detach}_network."""
 
-    def test_node_connect_network_success(self, switchinit):
+    def test_node_connect_network_success(self, switchinit_fixture):
         """Call to node_connect_network adds a NetworkAttachment."""
         new_node('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
@@ -720,7 +727,8 @@ class TestNodeConnectDetachNetwork:
         model.NetworkAttachment.query.filter_by(network=network,
                                                 nic=nic).one()
 
-    def test_node_connect_network_wrong_node_in_project(self, switchinit):
+    def test_node_connect_network_wrong_node_in_project(self,
+                                                        switchinit_fixture):
         """Connecting a nic that does not exist to a network fails
 
         ...even if the project has another node with a nic by that name.
@@ -796,7 +804,7 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_connect_network_different_projects(self, switchinit):
+    def test_node_connect_network_different_projects(self, switchinit_fixture):
         """Connecting a node to a network owned by a different project fails.
 
         (without a specific call to grant access).
@@ -813,7 +821,8 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_connect_network_already_attached_to_same(self, switchinit):
+    def test_node_connect_network_already_attached_to_same(self,
+                                                           switchinit_fixture):
         """Connecting a nic to a network twice should fail."""
         new_node('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
@@ -828,8 +837,8 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.BlockedError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_connect_network_already_attached_differently(self,
-                                                               switchinit):
+    def test_node_connect_network_already_attached_differently(
+                                                    self, switchinit_fixture):
         """Test connecting a nic that is busy to another network.
 
         i.e., If the nic is already connected to a different network (on
@@ -848,7 +857,7 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.BlockedError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet2')
 
-    def test_node_detach_network_success(self, switchinit):
+    def test_node_detach_network_success(self, switchinit_fixture):
         """Detaching a node from a network removes the NetworkAttachment."""
         new_node('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
@@ -886,7 +895,8 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.BadArgumentError):
             api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_detach_network_wrong_node_in_project(self, switchinit):
+    def test_node_detach_network_wrong_node_in_project(self,
+                                                       switchinit_fixture):
         """Detaching the "wrong" node from a network fails.
 
         In particular, if we have two nodes in a project with nics by the
@@ -906,7 +916,8 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
-    def test_node_detach_network_wrong_node_not_in_project(self, switchinit):
+    def test_node_detach_network_wrong_node_not_in_project(self,
+                                                           switchinit_fixture):
         """Same as above, but the "wrong" node is not part of the project."""
         new_node('node-99')
         new_node('node-98')
@@ -920,7 +931,7 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
-    def test_node_detach_network_no_such_node(self, switchinit):
+    def test_node_detach_network_no_such_node(self, switchinit_fixture):
         """Same as above, but the "wrong" node doesn't exist."""
         new_node('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
@@ -933,7 +944,7 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
-    def test_node_detach_network_no_such_nic(self, switchinit):
+    def test_node_detach_network_no_such_nic(self, switchinit_fixture):
         """Detaching a nic that doesn't exist raises not found."""
         new_node('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
@@ -946,7 +957,7 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-99', '99-eth1', 'hammernet')  # changed  # noqa
 
-    def test_node_detach_network_node_not_in_project(self, switchinit):
+    def test_node_detach_network_node_not_in_project(self, switchinit_fixture):
         """Detaching a node that is not in a network fails.
 
         In particular, this should raise ProjectMismatchError.
@@ -1382,7 +1393,7 @@ class TestNetworkCreateDelete:
         api.network_delete('hammernet')
         api.absent_or_conflict(model.Network, 'hammernet')
 
-    def test_network_delete_project_complex_success(self, switchinit):
+    def test_network_delete_project_complex_success(self, switchinit_fixture):
         """Do a handful of operations, and make sure nothing explodes.
 
         In particular, the sequence:
@@ -1416,7 +1427,7 @@ class TestNetworkCreateDelete:
         with pytest.raises(errors.NotFoundError):
             api.network_delete('hammernet')
 
-    def test_network_delete_node_on_network(self, switchinit):
+    def test_network_delete_node_on_network(self, switchinit_fixture):
         """Deleting a node that is attached to a network should fail."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
@@ -1593,7 +1604,7 @@ class Test_list_show_switch:
             'sw0',
         ]
 
-    def test_show_switch(self, switchinit):
+    def test_show_switch(self, switchinit_fixture):
         """Test show_switch
 
         This checks the output of show_switch before and after adding a port.
@@ -1618,7 +1629,7 @@ class Test_list_show_switch:
 class Test_show_port:
     """Test show_port"""
 
-    def test_show_port(self, switchinit):
+    def test_show_port(self, switchinit_fixture):
         """Test show_port
 
         * Fails on non-existing switch
@@ -1647,7 +1658,7 @@ class Test_show_port:
 class TestPortConnectDetachNic:
     """Test port_{connect,detach}_nic."""
 
-    def test_port_connect_nic_success(self, switchinit):
+    def test_port_connect_nic_success(self, switchinit_fixture):
         """Basic port_connect_nic doesn't raise an error."""
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
@@ -1695,7 +1706,8 @@ class TestPortConnectDetachNic:
         with pytest.raises(errors.NotFoundError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
-    def test_port_connect_nic_already_attached_to_same(self, switchinit):
+    def test_port_connect_nic_already_attached_to_same(self,
+                                                       switchinit_fixture):
         """Connecting a port to a nic twice fails."""
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
@@ -1703,8 +1715,8 @@ class TestPortConnectDetachNic:
         with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
-    def test_port_connect_nic_nic_already_attached_differently(self,
-                                                               switchinit):
+    def test_port_connect_nic_nic_already_attached_differently(
+                                                    self, switchinit_fixture):
         """
         Connecting a port to a nic fails, if the nic is attached to another
         port.
@@ -1716,8 +1728,8 @@ class TestPortConnectDetachNic:
         with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[3], 'compute-01', 'eth0')
 
-    def test_port_connect_nic_port_already_attached_differently(self,
-                                                                switchinit):
+    def test_port_connect_nic_port_already_attached_differently(
+                                                    self, switchinit_fixture):
         """
         Connecting a port to a nic fails, if the port is attached to
         another nic.
@@ -1730,7 +1742,7 @@ class TestPortConnectDetachNic:
         with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-02', 'eth1')
 
-    def test_port_detach_nic_success(self, switchinit):
+    def test_port_detach_nic_success(self, switchinit_fixture):
         """Basic call to port_detach_nic doesn't raise an error."""
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
@@ -1755,7 +1767,7 @@ class TestPortConnectDetachNic:
         with pytest.raises(errors.NotFoundError):
             api.port_detach_nic('sw0', PORTS[2])
 
-    def port_detach_nic_node_not_free(self, switchinit):
+    def port_detach_nic_node_not_free(self, switchinit_fixture):
         """should refuse to detach a nic if it has pending actions."""
         new_node('compute-01')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
@@ -2244,7 +2256,7 @@ class TestShowNetwork:
             'connected-nodes': {},
         }
 
-    def test_show_network_with_nodes(self, switchinit):
+    def test_show_network_with_nodes(self, switchinit_fixture):
         """test the output when a node is connected to a network"""
         auth = get_auth_backend()
 

@@ -14,7 +14,6 @@ fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 server_init = pytest.fixture(server_init)
 
 
-@pytest.fixture
 def dbauth():
     """Fixture returing hil.ext.auth.database
 
@@ -57,17 +56,18 @@ def configure():
 
 
 @pytest.fixture
-def initial_db(request, dbauth):
+def initial_db(request):
     """Populate the database with an initial set of objects.
 
     Just a few users & projects.
     """
     fresh_database(request)
+    local_dbauth = dbauth()
     with app.app_context():
-        alice = dbauth.User(label='alice',
+        alice = local_dbauth.User(label='alice',
                             password='secret',
                             is_admin=True)
-        bob = dbauth.User(label='bob',
+        bob = local_dbauth.User(label='bob',
                           password='password',
                           is_admin=False)
 
