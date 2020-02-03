@@ -173,6 +173,21 @@ def node_nic_delete(node, nic):
     client.node.remove_nic(node, nic)
 
 
+@node_nic.command(name='revert')
+@click.argument('node')
+@click.argument('nic')
+@click.option('--json', 'jsonout', is_flag=True)
+def node_nic_revert(node, nic, jsonout):
+    """Remove all networks from a nic"""
+    raw_output = client.node.revert_nic(node, nic)
+
+    if jsonout:
+        print_json(raw_output)
+
+    print(make_table(field_names=['Field', 'Value'],
+                     rows=[['Status ID', raw_output['status_id']]]))
+
+
 @node.group(name='obm')
 def obm():
     """Commands related to obm configuration"""

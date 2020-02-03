@@ -951,7 +951,7 @@ def switch_register(switch, type, **kwargs):
         cls.validate(kwargs)
     except SchemaError:
         raise errors.BadArgumentError(
-                        'The arguments are not valid for this switch type')
+            'The arguments are not valid for this switch type')
 
     obj = cls(**kwargs)
     obj.label = switch
@@ -1053,8 +1053,8 @@ def show_port(switch, port):
         return_obj = {'node': nic.owner.label,
                       'nic': nic.label,
                       'networks': dict(
-                        [(attachment.channel, attachment.network.label)
-                         for attachment in nic.attachments])}
+                          [(attachment.channel, attachment.network.label)
+                           for attachment in nic.attachments])}
     return json.dumps(return_obj)
 
 
@@ -1157,6 +1157,39 @@ def port_revert(switch, port):
     return json.dumps({'status_id': unique_id})
 
 
+@rest_call('POST', '/node/<node>/nic/<path:nic>/revert', Schema({
+    'node': basestring, 'nic': basestring,
+}))
+def nic_revert(node, nic):
+    """Detach nic from all networks."""
+
+    node = get_or_404(model.Node, node)
+
+    if not node.project:
+        raise errors.ProjectMismatchError("Node not in project")
+
+    get_auth_backend().require_project_access(node.project)
+
+    nic = get_child_or_404(node, model.Nic, nic)
+
+    if nic.port is None:
+        raise errors.NotFoundError("No port is connected to given nic.")
+
+    check_pending_action(nic)
+    unique_id = str(uuid.uuid4())
+
+    action = model.NetworkingAction(type='revert_port',
+                                    nic=nic,
+                                    channel='',
+                                    uuid=unique_id,
+                                    status='PENDING',
+                                    new_network=None)
+
+    db.session.add(action)
+    db.session.commit()
+    return json.dumps({'status_id': unique_id}), 202
+
+
 @rest_call('GET', '/networking_action/<status_id>', Schema({
     'status_id': basestring}))
 def show_networking_action(status_id):
@@ -1251,7 +1284,7 @@ def show_node(nodename):
             'switch': None if n.port is None else n.port.owner.label,
             'networks': dict([(attachment.channel,
                                attachment.network.label)
-                             for attachment in n.attachments]),
+                              for attachment in n.attachments]),
             } for n in node.nics]
 
     # remove port and switch info if the user is not an admin
@@ -1452,9 +1485,9 @@ def _maintain(project, node, node_label):
     if (cfg.has_option('maintenance', 'maintenance_project') and
             cfg.has_option('maintenance', 'url')):
         maintenance_proj = get_or_404(
-                model.Project,
-                cfg.get('maintenance', 'maintenance_project')
-                )
+            model.Project,
+            cfg.get('maintenance', 'maintenance_project')
+        )
         if (project == maintenance_proj):
             # Already in maintenance pool
             return

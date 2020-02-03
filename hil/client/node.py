@@ -32,8 +32,8 @@ class Node(ClientBase):
             },
         })
         return self.check_response(
-                self.httpClient.request('PUT', url, data=payload)
-                )
+            self.httpClient.request('PUT', url, data=payload)
+        )
 
     @check_reserved_chars()
     def delete(self, node_name):
@@ -66,8 +66,8 @@ class Node(ClientBase):
         url = self.object_url('node', node_name, 'power_cycle')
         payload = json.dumps({'force': force})
         return self.check_response(
-                self.httpClient.request('POST', url, data=payload)
-                )
+            self.httpClient.request('POST', url, data=payload)
+        )
 
     @check_reserved_chars()
     def power_off(self, node_name):
@@ -93,8 +93,8 @@ class Node(ClientBase):
         url = self.object_url('node', node, 'boot_device')
         payload = json.dumps({'bootdev': dev})
         return self.check_response(
-                self.httpClient.request('PUT', url, data=payload)
-                )
+            self.httpClient.request('PUT', url, data=payload)
+        )
 
     @check_reserved_chars(dont_check=['macaddr'])
     def add_nic(self, node_name, nic_name, macaddr):
@@ -102,8 +102,8 @@ class Node(ClientBase):
         url = self.object_url('node', node_name, 'nic', nic_name)
         payload = json.dumps({'macaddr': macaddr})
         return self.check_response(
-                self.httpClient.request('PUT', url, data=payload)
-                )
+            self.httpClient.request('PUT', url, data=payload)
+        )
 
     @check_reserved_chars()
     def remove_nic(self, node_name, nic_name):
@@ -111,29 +111,35 @@ class Node(ClientBase):
         url = self.object_url('node', node_name, 'nic', nic_name)
         return self.check_response(self.httpClient.request('DELETE', url))
 
+    @check_reserved_chars()
+    def revert_nic(self, node_name, nic_name):
+        """Remove all networks from a nic"""
+        url = self.object_url('node', node_name, 'nic', nic_name, 'revert')
+        return self.check_response(self.httpClient.request('POST', url))
+
     @check_reserved_chars(slashes_ok=['channel'])
     def connect_network(self, node, nic, network, channel):
         """Connect <node> to <network> on given <nic> and <channel>"""
         url = self.object_url(
-                'node', node, 'nic', nic, 'connect_network'
-                )
+            'node', node, 'nic', nic, 'connect_network'
+        )
         payload = json.dumps({
             'network': network, 'channel': channel
-            })
+        })
         return self.check_response(
-                self.httpClient.request('POST', url, data=payload)
-                )
+            self.httpClient.request('POST', url, data=payload)
+        )
 
     @check_reserved_chars()
     def detach_network(self, node, nic, network):
         """Disconnect <node> from <network> on the given <nic>. """
         url = self.object_url(
-                'node', node, 'nic', nic, 'detach_network'
-                )
+            'node', node, 'nic', nic, 'detach_network'
+        )
         payload = json.dumps({'network': network})
         return self.check_response(
-                self.httpClient.request('POST', url, data=payload)
-                )
+            self.httpClient.request('POST', url, data=payload)
+        )
 
     @check_reserved_chars()
     def metadata_set(self, node, label, value):
@@ -141,8 +147,8 @@ class Node(ClientBase):
         url = self.object_url('node', node, 'metadata', label)
         payload = json.dumps({'value': value})
         return self.check_response(
-                self.httpClient.request('PUT', url, data=payload)
-               )
+            self.httpClient.request('PUT', url, data=payload)
+        )
 
     @check_reserved_chars()
     def metadata_delete(self, node, label):
